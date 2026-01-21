@@ -1,6 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv').config();
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('../config/db');
 const authRoutes = require('../routes/authRoutes');
 const adminAuthRoutes = require('../routes/adminAuthRoutes')
@@ -15,7 +17,23 @@ connectDB();
 
 
 app.use(cors());
+
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 *1000,
+    max:100
+});
+
+app.use(helmet());
+app.use(limiter);
+app.use(cors({
+    origin: process.env.FRONTEND_URL ||
+     'http://localhost:5173',
+    // 'https://miwacakesandtreatsfrontend.vercel.app',
+    credentials:true
+}));
 app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
