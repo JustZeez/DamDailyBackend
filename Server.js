@@ -3,13 +3,13 @@ const dotenv = require('dotenv').config();
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('../config/db');
-const authRoutes = require('../routes/authRoutes');
-const adminAuthRoutes = require('../routes/adminAuthRoutes')
-const adminRoutes = require('../routes/adminRoutes');
-const userRoutes = require('../routes/UserRoutes');
-const newsRoutes = require('../routes/newsRoutes');
-const contactRoutes = require('../routes/contactRoutes')
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const adminAuthRoutes = require('./routes/adminAuthRoutes')
+const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/UserRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const contactRoutes = require('./routes/contactRoutes')
 const app = express();
 
 
