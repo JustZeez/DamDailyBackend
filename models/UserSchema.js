@@ -15,6 +15,7 @@ const user = mongoose.Schema(
         },
         Username:{
             type:String,
+            lowercase:true,
             required:[true , 'Please enter your username'],
             trim:true,
             unique: true
@@ -29,7 +30,7 @@ const user = mongoose.Schema(
         Password:{
             type:String,
             required:[true , 'Please enter your password'],
-            minLength:[7 , 'password must contain at least 7 character '],
+            minLength:[8 , 'password must contain at least 8 character '],
             maxLength:[1028 , 'password should not exceed 1028'],
             trim:true,
         },
@@ -38,7 +39,7 @@ const user = mongoose.Schema(
             required: [true, 'Please enter your phone number'],
             trim: true,
         },
-        Country: {
+        country: {
             type: String,
             required: [true, 'Enter your country'],
             trim: true,

@@ -292,7 +292,7 @@ const getSubscription = async (req, res) => {
 // Get billing history
 const getBillingHistory = async (req, res) => {
   try {
-    // For now return empty array - you can add real billing data later
+    
     const billingHistory = [];
 
     res.json({

@@ -12,10 +12,10 @@ const generateOtp = () => {
 // Register user
 const registerUser = async (req, res) => {
   try {
-    const { Firstname, Lastname, Username, email, Phonenumber, Country, Password } = req.body;
-    console.log("Registration request received:", { Firstname, Lastname, Username, email, Phonenumber, Country });
+    const { Firstname, Lastname, Username, email, Phonenumber, country, Password } = req.body;
+    console.log("Registration request received:", { Firstname, Lastname, Username, email, Phonenumber, country });
 
-    if (!Firstname || !Lastname || !Username || !Country || !Password || (!email && !Phonenumber)) {
+    if (!Firstname || !Lastname || !Username || !country || !Password || (!email && !Phonenumber)) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields'
@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
       Username,
       email,
       Phonenumber,
-      Country,
+      country,
       Password: hashedPassword
     });
     console.log("Saving user to database...");
@@ -74,7 +74,7 @@ const registerUser = async (req, res) => {
       console.log("OTP email sent successfully");
       console.log("OTP:", otp);
     } else{
-      console.error("Failed to send OTP email:", emailError);
+      console.error("Failed to send OTP email: Email address not provided");
     }
 
     console.log("Sending success response to frontend");
@@ -101,7 +101,7 @@ const registerUser = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { email, Phonenumber, otp } = req.body;
-    console.log('OTP verification request received', {email, Phonenumber, otp});
+    console.log('OTP verification request received', {email, otp});
     if ((!email && !Phonenumber) || !otp) {
       console.log('Missing required fields for OTP verification');
       return res.status(400).json({
@@ -169,31 +169,52 @@ const verifyOtp = async (req, res) => {
 // Resend OTP
 const resendOtp = async (req, res) => {
   try {
-    const { email, Phonenumber } = req.body;
-    if (!email && !Phonenumber) {
-      return res.status(400).json({ success: false, message: 'Email or phone number is required' });
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email is required' 
+      });
     }
 
-    const user = await User.findOne({ $or: [{ email }, { Phonenumber }] });
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
     }
 
-    // Delete old OTP
+    // 1. Clear any existing OTPs for this user to avoid confusion
     await UserVerification.deleteMany({ userId: user._id });
 
-    // Generate new OTP
+    // 2. Generate and Hash new OTP
     const otp = generateOtp();
     const hashedOtp = await bcrypt.hash(otp, 10);
 
-    await new UserVerification({ userId: user._id, otp: hashedOtp }).save();
+    // 3. Save to DB my schema will auto-delete this in 10 mins
+    await new UserVerification({ 
+      userId: user._id, 
+      otp: hashedOtp,
+      createdAt: new Date() 
+    }).save();
 
-    if (email) await sendOtpEmail(email, otp);
+    // 4. Send the plain text OTP via email
+    await sendOtpEmail(email, otp);
+    console.log('Resent OTP:' ,otp);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'A new 6-digit code has been sent to your email.' 
+    });
 
-    res.status(200).json({ success: true, message: 'New OTP sent successfully' });
   } catch (error) {
     console.error('Resend OTP error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to resend OTP. Please try again later.' 
+    });
   }
 };
 
@@ -249,7 +270,7 @@ const loginUser = async (req, res) => {
           Username: user.Username,
           email: user.email,
           Phonenumber: user.Phonenumber,
-          Country: user.Country
+          cuntry: user.country
         }
       }
     });
