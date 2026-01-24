@@ -5,11 +5,16 @@ const path = require('path');
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: process.env.EMAIL_PORT || 587,
+  secure: false, 
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    pass: process.env.EMAIL_PASSWORD, 
   },
+  tls: {
+    rejectUnauthorized: false 
+  }
 });
 
 // Verify transporter configuration
@@ -205,7 +210,7 @@ const sendOtpEmail = async (email, otp) => {
 
 // Send password reset email
 const sendPasswordResetEmail = async (email, resetToken, name) => {
-  const resetUrl = `${process.env.CLIENT_URL}/resetpassword?token=${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
   
   const mailOptions = {
     from: process.env.EMAIL_USER,
